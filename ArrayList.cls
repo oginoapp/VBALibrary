@@ -12,11 +12,17 @@ Option Explicit
 Private thisSize As Long
 Private elements() As Variant
 
+'初期化
 Public Sub Class_Initialize()
     thisSize = 0
 End Sub
 
-Public Function addItem(ByVal item As Variant)
+'アイテム追加
+Public Function addItem(ByVal item As Variant) As Boolean
+    Dim result As Boolean
+    result = False
+
+    On Error GoTo Finally
     ReDim Preserve elements(thisSize)
     If IsObject(item) Then
         Set elements(thisSize) = item
@@ -24,27 +30,44 @@ Public Function addItem(ByVal item As Variant)
         elements(thisSize) = item
     End If
     thisSize = thisSize + 1
+    result = True
+    
+Finally:
+    addItem = result
 End Function
 
-Public Function getItem(index As Long)
+'アイテム取得
+Public Function getItem(index As Long) As Variant
     getItem = elements(index)
 End Function
 
-Public Function getObject(index As Long)
+'アイテム取得(オブジェクト)
+Public Function getObject(index As Long) As Object
     Set getObject = elements(index)
 End Function
 
-Public Function setItem(index As Long, ByVal item As Variant)
+'アイテムを指定したインデックスに上書き
+Public Function setItem(index As Long, ByVal item As Variant) As Boolean
+        Dim result As Boolean
+        result = False
+        
+        On Error GoTo Finally
         If IsObject(item) Then
                 Set elements(index) = item
+                result = True
         Else
                 elements(index) = item
+                result = True
         End If
+        
+Finally:
+        setItem = result
 End Function
 
-Public Function removeItem(index As Long)
+'アイテム削除
+Public Function removeItem(index As Long) As Boolean
     Dim result As Boolean
-    ReDim tmpElements(thisSize - 1) As Variant
+    ReDim tmpElements(thisSize - 2) As Variant
     result = False
     
     Dim i As Long
@@ -53,18 +76,23 @@ Public Function removeItem(index As Long)
         If index = i Then
             result = True
         Else
-            tmpElements(i) = elements(i)
+            tmpElements(j) = elements(i)
             j = j + 1
         End If
     Next
     
     If result = True Then
+        ReDim Preserve elements(thisSize - 2)
+        For i = 0 To UBound(tmpElements)
+            elements(i) = tmpElements(i)
+        Next
         thisSize = thisSize - 1
     End If
     removeItem = result
 End Function
 
-Public Function containsValue(item As Variant)
+'同じアイテムがあるかどうかの確認
+Public Function containsValue(item As Variant) As Boolean
     Dim result As Boolean
     result = False
     Dim i As Long
@@ -76,6 +104,7 @@ Public Function containsValue(item As Variant)
     containsValue = result
 End Function
 
-Public Function size()
+'サイズ取得
+Public Function size() As Long
     size = thisSize
 End Function
